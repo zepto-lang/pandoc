@@ -1,0 +1,16 @@
+name:                pandoc-zp
+version:             0.0.1
+author:              Veit Heller
+maintainer:          Veit Heller
+build-type:          Simple
+description:         A Pandoc wrapper for zepto.
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+library
+  exposed-modules:     Pandoc
+  build-depends:       base >=4.9 && <4.10,
+                       pandoc,
+                       zepto >=0.9 && <0.10
+  default-language:    Haskell2010
+  Hs-Source-Dirs:      priv

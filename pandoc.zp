@@ -1,0 +1,10 @@
+(module "pandoc"
+  (export
+    `("get-readers" ,readers)
+    `("get-writers" ,writers)
+    `("get-formats" ,formats))
+
+  (loads "pandoc/priv/Pandoc" "pandoc/priv/req")
+
+  (formats (lambda ()
+    (set:get-elems (set:set (++ (readers) (writers)) :container-type '[])))))
