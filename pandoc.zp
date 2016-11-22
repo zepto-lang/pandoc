@@ -3,9 +3,53 @@
     `("get-readers" ,readers)
     `("get-writers" ,writers)
     `("convert"     ,convert)
-    `("get-formats" ,formats))
+    `("get-formats" ,formats)
+    `("write"       ,_write))
 
   (loads "pandoc/priv/Pandoc" "pandoc/priv/req")
 
+  (MATCHERS
+    #{"md"   "markdown"
+      "tex"  "latex"
+      "html" "html"
+      "json" "json"
+      "org" "org"
+      "tei" "tei"
+      "t2t" "t2t"
+      "docx" "docx"
+      "odt" "odt"
+      "epub" "epub"
+      "groff" "man"
+      "rst" "rst"
+      "rtf" "rtf"
+      "txt" "plain"
+      "asciidoc" "asciidoc"
+      "adoc" "asciidoc"
+      "wiki" "mediawiki"
+      "lhs" "haddock"})
+
   (formats (lambda ()
-    (set:get-elems (set:set (++ (readers) (writers)) :container-type '[])))))
+    "get all available pandoc formats (read and write).
+
+     complexity: O(n)
+     returns: a list of strings"
+    (set:get-elems (set:set (++ (readers) (writers)) :container-type '[]))))
+
+  (filetype (lambda (filename)
+    (let ((extension (list:last (string:split filename #\.))))
+      (if (in? MATCHERS extension)
+        (MATCHERS extension)
+        (error:from-string (++ "Unknown file type: " extension))))))
+
+  (_write (lambda (from to)
+    "converts based on an input and output file. Does file extension
+     matching.
+
+     params:
+       - from: input file
+       - to: output file
+     complexity: varies based on formats
+     returns: nil"
+    (let* ((inpt    (read-contents from))
+           (writer (curry write (convert (filetype from) (filetype to) inpt))))
+      (with-output-file to writer)))))
