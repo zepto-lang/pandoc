@@ -10,6 +10,7 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Pandoc
   build-depends:       base >=4.9 && <4.10,
+                       bytestring >=0.10.0.0,
                        pandoc,
                        zepto >=0.9 && <0.10
   default-language:    Haskell2010

@@ -2,6 +2,7 @@
   (export
     `("get-readers" ,readers)
     `("get-writers" ,writers)
+    `("convert"     ,convert)
     `("get-formats" ,formats))
 
   (loads "pandoc/priv/Pandoc" "pandoc/priv/req")
