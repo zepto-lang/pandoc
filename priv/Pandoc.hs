@@ -1,7 +1,7 @@
 module Pandoc where
 
 import Data.List (intercalate)
-import Data.ByteString.Lazy (toStrict)
+import Data.ByteString.Lazy (toStrict, fromStrict)
 import Text.Pandoc (ReaderOptions(..),
                     WriterOptions(..),
                     Reader(..),
@@ -44,6 +44,16 @@ getWriters = return $ List $ map (fromSimple . String . fst) writers
 
 write writer f contents = do
     processed <- liftLisp $ f (def ReaderOptions) contents
+    write' writer contents processed
+
+writeB writer f contents = do
+    processed <- liftLisp $ f (def ReaderOptions) (fromStrict contents)
+    write' writer contents
+           (case processed of
+             Right val -> Right $ fst val
+             Left err -> Left err)
+
+write' writer contents processed =
     case processed of
       Right read ->
         case writer of
@@ -81,8 +91,30 @@ convert [SimpleVal (String from), SimpleVal (String to),
               StringReader f -> write writer f contents
               ByteStringReader _ ->
                 lispErr $ Default $
-                  "reader " ++ from ++ " only accepts binary input, was given string."
+                  "reader " ++ from ++
+                  " only accepts binary input, was given string."
           Left err ->
             lispErr $ Default err
       Left err ->
         lispErr $ Default err
+convert [SimpleVal (String from), SimpleVal (String to),
+         ByteVector contents] =
+    case getReader from of
+      Right reader ->
+        case getWriter to of
+          Right writer ->
+            case reader of
+              StringReader _ ->
+                lispErr $ Default $
+                  "reader " ++ from ++
+                  " only accepts string input, was given bytevector."
+              ByteStringReader f ->
+                writeB writer f contents
+          Left err ->
+            lispErr $ Default err
+      Left err ->
+        lispErr $ Default err
+convert [SimpleVal (String _), SimpleVal (String _), x] =
+    lispErr $ TypeMismatch "string" x
+convert [SimpleVal (String _), x, _] = lispErr $ TypeMismatch "string" x
+convert [x, _, _] = lispErr $ TypeMismatch "string" x

@@ -9,24 +9,24 @@
   (loads "pandoc/priv/Pandoc" "pandoc/priv/req")
 
   (MATCHERS
-    #{"md"   "markdown"
-      "tex"  "latex"
-      "html" "html"
-      "json" "json"
-      "org" "org"
-      "tei" "tei"
-      "t2t" "t2t"
-      "docx" "docx"
-      "odt" "odt"
-      "epub" "epub"
-      "groff" "man"
-      "rst" "rst"
-      "rtf" "rtf"
-      "txt" "plain"
-      "asciidoc" "asciidoc"
-      "adoc" "asciidoc"
-      "wiki" "mediawiki"
-      "lhs" "haddock"})
+    #{"md"       #{:ext "markdown"  :binary #f}
+      "tex"      #{:ext "latex"     :binary #f}
+      "html"     #{:ext "html"      :binary #f}
+      "json"     #{:ext "json"      :binary #f}
+      "org"      #{:ext "org"       :binary #f}
+      "tei"      #{:ext "tei"       :binary #f}
+      "t2t"      #{:ext "t2t"       :binary #t}
+      "docx"     #{:ext "docx"      :binary #t}
+      "odt"      #{:ext "odt"       :binary #t}
+      "epub"     #{:ext "epub"      :binary #t}
+      "groff"    #{:ext "man"       :binary #f}
+      "rst"      #{:ext "rst"       :binary #f}
+      "rtf"      #{:ext "rtf"       :binary #f}
+      "txt"      #{:ext "plain"     :binary #f}
+      "asciidoc" #{:ext "asciidoc"  :binary #f}
+      "adoc"     #{:ext "asciidoc"  :binary #f}
+      "wiki"     #{:ext "mediawiki" :binary #f}
+      "lhs"      #{:ext "haddock"   :binary #f}})
 
   (formats (lambda ()
     "get all available pandoc formats (read and write).
@@ -50,6 +50,10 @@
        - to: output file
      complexity: varies based on formats
      returns: nil"
-    (let* ((inpt    (read-contents from))
-           (writer (curry write (convert (filetype from) (filetype to) inpt))))
+    (let* ((fft    (filetype from))
+           (inpt   ((if (fft :binary) read-binary-contents read-contents)
+                      from))
+           (writer (curry write (convert (fft :ext)
+                                         ((filetype to) :ext)
+                                         inpt))))
       (with-output-file to writer)))))
